@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from functools import wraps
+
 
 # from werkzeug import generate_password_hash, check_password_hash
 
@@ -14,6 +16,20 @@ app.secret_key = (
 )
 # app.secret_key = os.urandom()
 
+def login_required(f):
+    
+    def wrapper(*args, **kwargs):
+        if 'user' in session:
+            return f(*args, **kwargs)
+        else:
+            flash(f'Pro zobrazení této stránky ({request.path}) je nutné se přihlásit!', 'err')
+            return redirect(url_for('login', next=request.path))
+
+    
+    wrapper.__name__ = f.__name__
+    wrapper.__name__ = f.__name__
+    return wrapper
+
 
 @app.route("/")
 def index():
@@ -21,6 +37,7 @@ def index():
 
 
 @app.route("/abc/", methods=["GET"])
+@login_required
 def abc():
     try:
         x = request.args.get("x")
